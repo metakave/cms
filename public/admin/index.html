@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +8,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Quill Rich Text Editor -->
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
   <link rel="stylesheet" href="/admin/css/admin.css">
 </head>
+
 <body>
   <!-- Login Page -->
   <div id="loginPage" class="login-container">
@@ -66,6 +70,12 @@
             </a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" data-page="menus">
+              <span>🔗</span>
+              <span>Menus</span>
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" data-page="categories">
               <span>🏷️</span>
               <span>Categories</span>
@@ -93,18 +103,21 @@
         <h1 id="pageTitle">Dashboard</h1>
         <div id="topbarActions"></div>
       </div>
-      
+
       <div id="pageContent">
         <!-- Dynamic content will be loaded here -->
       </div>
     </main>
   </div>
 
+  <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
   <script src="/admin/js/admin.js"></script>
   <script src="/admin/js/components/postTypes.js"></script>
   <script src="/admin/js/components/posts.js"></script>
   <script src="/admin/js/components/pages.js"></script>
+  <script src="/admin/js/components/menus.js"></script>
   <script src="/admin/js/components/categories.js"></script>
   <script src="/admin/js/components/tags.js"></script>
 </body>
+
 </html>

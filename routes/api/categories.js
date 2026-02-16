@@ -6,7 +6,7 @@ const { requireAuth } = require('../../middleware/auth');
 const router = express.Router();
 
 // All routes require authentication
-router.use(requireAuth);
+// router.use(requireAuth); // Global auth removed for public access
 
 // Get all categories
 router.get('/', (req, res) => {
@@ -36,7 +36,7 @@ router.get('/:id', (req, res) => {
 });
 
 // Create category
-router.post('/', (req, res) => {
+router.post('/', requireAuth, (req, res) => {
     try {
         const { name, slug, description } = req.body;
 
@@ -62,7 +62,7 @@ router.post('/', (req, res) => {
 });
 
 // Update category
-router.put('/:id', (req, res) => {
+router.put('/:id', requireAuth, (req, res) => {
     try {
         const { name, slug, description } = req.body;
         const id = req.params.id;
@@ -98,7 +98,7 @@ router.put('/:id', (req, res) => {
 });
 
 // Delete category
-router.delete('/:id', (req, res) => {
+router.delete('/:id', requireAuth, (req, res) => {
     try {
         const id = req.params.id;
 

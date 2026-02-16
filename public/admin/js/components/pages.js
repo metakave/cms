@@ -1,17 +1,17 @@
 // Pages Management
 async function renderPages(container, topbarActions) {
-    topbarActions.innerHTML = `
+  topbarActions.innerHTML = `
     <button class="btn btn-primary" onclick="openPageModal()">
       <span>➕</span> New Page
     </button>
   `;
 
-    container.innerHTML = '<div class="spinner"></div>';
+  container.innerHTML = '<div class="spinner"></div>';
 
-    try {
-        const pages = await api.get('/api/pages');
+  try {
+    const pages = await api.get('/api/pages');
 
-        container.innerHTML = `
+    container.innerHTML = `
       <div class="card">
         <div class="table-container">
           <table>
@@ -59,19 +59,27 @@ async function renderPages(container, topbarActions) {
             <input type="hidden" id="pageId">
             <div class="form-group">
               <label class="form-label">Title *</label>
-              <input type="text" id="pageTitle" class="form-input" required>
+              <input type="text" id="pageTitle" name="title" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Featured Image</label>
+              <div class="flex gap-2">
+                <input type="text" id="pageFeaturedImage" name="featured_image" class="form-input" placeholder="https://example.com/image.jpg">
+                <input type="file" id="pageFeaturedImageFile" style="display: none;" onchange="uploadPageImage(this)">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('pageFeaturedImageFile').click()">Browse</button>
+              </div>
             </div>
             <div class="form-group">
               <label class="form-label">Slug</label>
-              <input type="text" id="pageSlug" class="form-input" placeholder="Auto-generated from title">
+              <input type="text" id="pageSlug" name="slug" class="form-input" placeholder="Auto-generated from title">
             </div>
             <div class="form-group">
               <label class="form-label">Content</label>
-              <textarea id="pageContent" class="form-textarea" style="min-height: 200px;"></textarea>
+              <textarea id="pageContent" name="content" class="form-textarea" style="min-height: 200px;"></textarea>
             </div>
             <div class="form-group">
               <label class="form-label">Template</label>
-              <select id="pageTemplate" class="form-select">
+              <select id="pageTemplate" name="template" class="form-select">
                 <option value="default">Default</option>
                 <option value="full-width">Full Width</option>
                 <option value="sidebar">With Sidebar</option>
@@ -79,7 +87,7 @@ async function renderPages(container, topbarActions) {
             </div>
             <div class="form-group">
               <label class="form-label">Status</label>
-              <select id="pageStatus" class="form-select">
+              <select id="pageStatus" name="status" class="form-select">
                 <option value="draft">Draft</option>
                 <option value="published">Published</option>
               </select>
@@ -93,76 +101,103 @@ async function renderPages(container, topbarActions) {
       </div>
     `;
 
-        document.getElementById('pageForm').addEventListener('submit', savePage);
-    } catch (error) {
-        container.innerHTML = `<div class="alert alert-error">Failed to load pages: ${error.message}</div>`;
-    }
+    document.getElementById('pageForm').addEventListener('submit', savePage);
+  } catch (error) {
+    container.innerHTML = `<div class="alert alert-error">Failed to load pages: ${error.message}</div>`;
+  }
 }
 
 function openPageModal() {
-    document.getElementById('pageModalTitle').textContent = 'New Page';
-    document.getElementById('pageForm').reset();
-    document.getElementById('pageId').value = '';
-    document.getElementById('pageModal').classList.add('active');
+  document.getElementById('pageModalTitle').textContent = 'New Page';
+  document.getElementById('pageForm').reset();
+  document.getElementById('pageId').value = '';
+  document.getElementById('pageFeaturedImage').value = '';
+  document.getElementById('pageModal').classList.add('active');
+}
+
+async function uploadPageImage(input) {
+  if (!input.files || !input.files[0]) return;
+
+  const file = input.files[0];
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await response.json();
+    if (data.url) {
+      document.getElementById('pageFeaturedImage').value = data.url;
+      showAlert('Image uploaded successfully');
+    } else {
+      throw new Error(data.error || 'Upload failed');
+    }
+  } catch (error) {
+    showAlert(error.message, 'error');
+  }
 }
 
 function closePageModal() {
-    document.getElementById('pageModal').classList.remove('active');
+  document.getElementById('pageModal').classList.remove('active');
 }
 
 async function editPage(id) {
-    try {
-        const page = await api.get(`/api/pages/${id}`);
+  try {
+    const page = await api.get(`/api/pages/${id}`);
 
-        document.getElementById('pageModalTitle').textContent = 'Edit Page';
-        document.getElementById('pageId').value = page.id;
-        document.getElementById('pageTitle').value = page.title;
-        document.getElementById('pageSlug').value = page.slug;
-        document.getElementById('pageContent').value = page.content || '';
-        document.getElementById('pageTemplate').value = page.template;
-        document.getElementById('pageStatus').value = page.status;
-        document.getElementById('pageModal').classList.add('active');
-    } catch (error) {
-        showAlert(error.message, 'error');
-    }
+    document.getElementById('pageModalTitle').textContent = 'Edit Page';
+    document.getElementById('pageId').value = page.id;
+    document.getElementById('pageTitle').value = page.title;
+    document.getElementById('pageFeaturedImage').value = page.featured_image || '';
+    document.getElementById('pageSlug').value = page.slug;
+    document.getElementById('pageContent').value = page.content || '';
+    document.getElementById('pageTemplate').value = page.template;
+    document.getElementById('pageStatus').value = page.status;
+    document.getElementById('pageModal').classList.add('active');
+  } catch (error) {
+    showAlert(error.message, 'error');
+  }
 }
 
 async function savePage(e) {
-    e.preventDefault();
+  e.preventDefault();
 
-    const id = document.getElementById('pageId').value;
-    const data = {
-        title: document.getElementById('pageTitle').value,
-        slug: document.getElementById('pageSlug').value,
-        content: document.getElementById('pageContent').value,
-        template: document.getElementById('pageTemplate').value,
-        status: document.getElementById('pageStatus').value
-    };
+  const id = document.getElementById('pageId').value;
+  const data = {
+    title: document.getElementById('pageTitle').value,
+    featured_image: document.getElementById('pageFeaturedImage').value,
+    slug: document.getElementById('pageSlug').value,
+    content: document.getElementById('pageContent').value,
+    template: document.getElementById('pageTemplate').value,
+    status: document.getElementById('pageStatus').value
+  };
 
-    try {
-        if (id) {
-            await api.put(`/api/pages/${id}`, data);
-            showAlert('Page updated successfully');
-        } else {
-            await api.post('/api/pages', data);
-            showAlert('Page created successfully');
-        }
-
-        closePageModal();
-        loadPage('pages');
-    } catch (error) {
-        showAlert(error.message, 'error');
+  try {
+    if (id) {
+      await api.put(`/api/pages/${id}`, data);
+      showAlert('Page updated successfully');
+    } else {
+      await api.post('/api/pages', data);
+      showAlert('Page created successfully');
     }
+
+    closePageModal();
+    loadPage('pages');
+  } catch (error) {
+    showAlert(error.message, 'error');
+  }
 }
 
 async function deletePage(id) {
-    if (!confirmDelete('Are you sure you want to delete this page?')) return;
+  if (!confirmDelete('Are you sure you want to delete this page?')) return;
 
-    try {
-        await api.delete(`/api/pages/${id}`);
-        showAlert('Page deleted successfully');
-        loadPage('pages');
-    } catch (error) {
-        showAlert(error.message, 'error');
-    }
+  try {
+    await api.delete(`/api/pages/${id}`);
+    showAlert('Page deleted successfully');
+    loadPage('pages');
+  } catch (error) {
+    showAlert(error.message, 'error');
+  }
 }

@@ -6,7 +6,7 @@ const { requireAuth } = require('../../middleware/auth');
 const router = express.Router();
 
 // All routes require authentication
-router.use(requireAuth);
+// router.use(requireAuth); // Global auth removed for public access
 
 // Get all pages
 router.get('/', (req, res) => {
@@ -48,9 +48,9 @@ router.get('/:id', (req, res) => {
 });
 
 // Create page
-router.post('/', (req, res) => {
+router.post('/', requireAuth, (req, res) => {
     try {
-        const { title, slug, content, template, status } = req.body;
+        const { title, slug, content, template, status, featured_image } = req.body;
 
         if (!title) {
             return res.status(400).json({ error: 'Title is required' });
@@ -60,14 +60,15 @@ router.post('/', (req, res) => {
         const uniqueSlug = ensureUniqueSlug(finalSlug, 'pages', db);
 
         const result = db.prepare(`
-      INSERT INTO pages (title, slug, content, template, status, author_id)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO pages (title, slug, content, template, status, featured_image, author_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `).run(
             title,
             uniqueSlug,
             content || '',
             template || 'default',
             status || 'draft',
+            featured_image || null,
             req.session.userId
         );
 
@@ -81,9 +82,9 @@ router.post('/', (req, res) => {
 });
 
 // Update page
-router.put('/:id', (req, res) => {
+router.put('/:id', requireAuth, (req, res) => {
     try {
-        const { title, slug, content, template, status } = req.body;
+        const { title, slug, content, template, status, featured_image } = req.body;
         const id = req.params.id;
 
         const existing = db.prepare('SELECT * FROM pages WHERE id = ?').get(id);
@@ -99,7 +100,7 @@ router.put('/:id', (req, res) => {
 
         db.prepare(`
       UPDATE pages 
-      SET title = ?, slug = ?, content = ?, template = ?, status = ?, updated_at = CURRENT_TIMESTAMP
+      SET title = ?, slug = ?, content = ?, template = ?, status = ?, featured_image = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(
             title || existing.title,
@@ -107,6 +108,7 @@ router.put('/:id', (req, res) => {
             content !== undefined ? content : existing.content,
             template || existing.template,
             status || existing.status,
+            featured_image !== undefined ? featured_image : existing.featured_image,
             id
         );
 
@@ -119,7 +121,7 @@ router.put('/:id', (req, res) => {
 });
 
 // Delete page
-router.delete('/:id', (req, res) => {
+router.delete('/:id', requireAuth, (req, res) => {
     try {
         const id = req.params.id;
 

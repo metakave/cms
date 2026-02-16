@@ -122,7 +122,8 @@ function loadPage(pageName) {
         'posts': 'Posts',
         'pages': 'Pages',
         'categories': 'Categories',
-        'tags': 'Tags'
+        'tags': 'Tags',
+        'menus': 'Menus'
     };
 
     document.getElementById('pageTitle').textContent = titles[pageName] || pageName;
@@ -151,6 +152,9 @@ function loadPage(pageName) {
         case 'tags':
             renderTags(pageContent, topbarActions);
             break;
+        case 'menus':
+            renderMenus(pageContent, topbarActions);
+            break;
     }
 }
 
@@ -158,7 +162,7 @@ function loadPage(pageName) {
 function renderDashboard(container) {
     container.innerHTML = `
     <div class="card">
-      <h2>Welcome to CMS Admin! 🎉</h2>
+      <h2>Welcome to Odoo Migration Service! 🎉</h2>
       <p class="text-muted">Manage your content from the sidebar navigation.</p>
     </div>
     
@@ -179,6 +183,12 @@ function renderDashboard(container) {
         <h3>📄 Pages</h3>
         <p class="text-muted">Manage static pages</p>
         <button class="btn btn-primary btn-sm" onclick="loadPage('pages')">Manage</button>
+      </div>
+
+       <div class="card">
+        <h3>🔗 Menus</h3>
+        <p class="text-muted">Manage navigation menus</p>
+        <button class="btn btn-primary btn-sm" onclick="loadPage('menus')">Manage</button>
       </div>
       
       <div class="card">

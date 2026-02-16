@@ -6,7 +6,7 @@ const { requireAuth } = require('../../middleware/auth');
 const router = express.Router();
 
 // All routes require authentication
-router.use(requireAuth);
+// router.use(requireAuth); // Global auth removed for public access
 
 // Get all posts with filters
 router.get('/', (req, res) => {
@@ -121,7 +121,7 @@ router.get('/:id', (req, res) => {
 });
 
 // Create post
-router.post('/', (req, res) => {
+router.post('/', requireAuth, (req, res) => {
     try {
         const { title, slug, content, excerpt, post_type_id, status, featured_image, category_ids, tag_ids } = req.body;
 
@@ -179,7 +179,7 @@ router.post('/', (req, res) => {
 });
 
 // Update post
-router.put('/:id', (req, res) => {
+router.put('/:id', requireAuth, (req, res) => {
     try {
         const { title, slug, content, excerpt, post_type_id, status, featured_image, category_ids, tag_ids } = req.body;
         const id = req.params.id;
@@ -248,7 +248,7 @@ router.put('/:id', (req, res) => {
 });
 
 // Delete post
-router.delete('/:id', (req, res) => {
+router.delete('/:id', requireAuth, (req, res) => {
     try {
         const id = req.params.id;
 

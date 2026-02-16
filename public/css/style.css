@@ -1,0 +1,53 @@
+/* Layout refinements */
+.avatar-small {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+/* Loading State */
+.loading-state {
+    display: flex;
+    justify-content: center;
+    padding: 40px;
+}
+
+.spinner {
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top: 3px solid #24292f;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Hero Section (Repository Style) */
+.repo-header {
+    margin-bottom: 24px;
+}
+
+.repo-title {
+    font-size: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.repo-desc {
+    font-size: 14px;
+    color: var(--color-fg-muted);
+    margin-top: 4px;
+}

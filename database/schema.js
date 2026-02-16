@@ -3,8 +3,8 @@ const bcrypt = require('bcrypt');
 
 // Initialize database schema
 const initSchema = () => {
-    // Users table
-    db.exec(`
+  // Users table
+  db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT UNIQUE NOT NULL,
@@ -14,8 +14,8 @@ const initSchema = () => {
     )
   `);
 
-    // Post types table
-    db.exec(`
+  // Post types table
+  db.exec(`
     CREATE TABLE IF NOT EXISTS post_types (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -27,8 +27,8 @@ const initSchema = () => {
     )
   `);
 
-    // Categories table
-    db.exec(`
+  // Categories table
+  db.exec(`
     CREATE TABLE IF NOT EXISTS categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -38,8 +38,8 @@ const initSchema = () => {
     )
   `);
 
-    // Tags table
-    db.exec(`
+  // Tags table
+  db.exec(`
     CREATE TABLE IF NOT EXISTS tags (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -48,8 +48,8 @@ const initSchema = () => {
     )
   `);
 
-    // Posts table
-    db.exec(`
+  // Posts table
+  db.exec(`
     CREATE TABLE IF NOT EXISTS posts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,
@@ -67,8 +67,8 @@ const initSchema = () => {
     )
   `);
 
-    // Pages table
-    db.exec(`
+  // Pages table
+  db.exec(`
     CREATE TABLE IF NOT EXISTS pages (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,
@@ -76,6 +76,7 @@ const initSchema = () => {
       content TEXT,
       template TEXT DEFAULT 'default',
       status TEXT DEFAULT 'draft',
+      featured_image TEXT,
       author_id INTEGER,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -83,8 +84,8 @@ const initSchema = () => {
     )
   `);
 
-    // Post-Category relationship (many-to-many)
-    db.exec(`
+  // Post-Category relationship (many-to-many)
+  db.exec(`
     CREATE TABLE IF NOT EXISTS post_categories (
       post_id INTEGER NOT NULL,
       category_id INTEGER NOT NULL,
@@ -94,8 +95,8 @@ const initSchema = () => {
     )
   `);
 
-    // Post-Tag relationship (many-to-many)
-    db.exec(`
+  // Post-Tag relationship (many-to-many)
+  db.exec(`
     CREATE TABLE IF NOT EXISTS post_tags (
       post_id INTEGER NOT NULL,
       tag_id INTEGER NOT NULL,
@@ -105,8 +106,24 @@ const initSchema = () => {
     )
   `);
 
-    // Settings table
-    db.exec(`
+  // Menus table (Hierarchical)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS menus (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      label TEXT NOT NULL,
+      url TEXT,
+      type TEXT DEFAULT 'page',
+      parent_id INTEGER,
+      page_id INTEGER,
+      order_index INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (parent_id) REFERENCES menus(id) ON DELETE CASCADE,
+      FOREIGN KEY (page_id) REFERENCES pages(id) ON DELETE SET NULL
+    )
+  `);
+
+  // Settings table
+  db.exec(`
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
       value TEXT,
@@ -114,57 +131,57 @@ const initSchema = () => {
     )
   `);
 
-    console.log('✅ Database schema initialized');
+  console.log('✅ Database schema initialized');
 };
 
 // Seed default data
 const seedData = async () => {
-    // Check if admin user exists
-    const adminExists = db.prepare('SELECT id FROM users WHERE username = ?').get('admin');
+  // Check if admin user exists
+  const adminExists = db.prepare('SELECT id FROM users WHERE username = ?').get('admin');
 
-    if (!adminExists) {
-        const password = process.env.ADMIN_PASSWORD || 'admin123';
-        const passwordHash = await bcrypt.hash(password, 10);
+  if (!adminExists) {
+    const password = process.env.ADMIN_PASSWORD || 'admin123';
+    const passwordHash = await bcrypt.hash(password, 10);
 
-        db.prepare(`
+    db.prepare(`
       INSERT INTO users (username, password_hash, role)
       VALUES (?, ?, ?)
     `).run('admin', passwordHash, 'admin');
 
-        console.log('✅ Default admin user created (username: admin)');
-    }
+    console.log('✅ Default admin user created (username: admin)');
+  }
 
-    // Check if default post type exists
-    const postTypeExists = db.prepare('SELECT id FROM post_types WHERE slug = ?').get('blog');
+  // Check if default post type exists
+  const postTypeExists = db.prepare('SELECT id FROM post_types WHERE slug = ?').get('blog');
 
-    if (!postTypeExists) {
-        db.prepare(`
+  if (!postTypeExists) {
+    db.prepare(`
       INSERT INTO post_types (name, slug, icon, description)
       VALUES (?, ?, ?, ?)
     `).run('Blog Posts', 'blog', '📝', 'Standard blog posts');
 
-        console.log('✅ Default post type created (Blog Posts)');
-    }
+    console.log('✅ Default post type created (Blog Posts)');
+  }
 
-    // Default settings
-    const siteTitle = db.prepare('SELECT value FROM settings WHERE key = ?').get('site_title');
-    if (!siteTitle) {
-        db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('site_title', 'My CMS');
-        db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('site_description', 'A lightweight CMS');
-        console.log('✅ Default settings created');
-    }
+  // Default settings
+  const siteTitle = db.prepare('SELECT value FROM settings WHERE key = ?').get('site_title');
+  if (!siteTitle) {
+    db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('site_title', 'My CMS');
+    db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('site_description', 'A lightweight CMS');
+    console.log('✅ Default settings created');
+  }
 };
 
 // Initialize database
 const initDatabase = async () => {
-    try {
-        initSchema();
-        await seedData();
-        console.log('✅ Database ready');
-    } catch (error) {
-        console.error('❌ Database initialization error:', error);
-        throw error;
-    }
+  try {
+    initSchema();
+    await seedData();
+    console.log('✅ Database ready');
+  } catch (error) {
+    console.error('❌ Database initialization error:', error);
+    throw error;
+  }
 };
 
 module.exports = { initDatabase };
