@@ -1,0 +1,28 @@
+{
+    "name": "lightweight-cms",
+    "version": "1.0.0",
+    "description": "A lightweight CMS with admin panel and frontend",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js",
+        "dev": "node --watch server.js",
+        "test": "node --test tests/*.test.js"
+    },
+    "keywords": [
+        "cms",
+        "content-management",
+        "sqlite",
+        "express"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "express": "^4.18.2",
+        "bcrypt": "^5.1.1",
+        "express-session": "^1.17.3",
+        "dotenv": "^16.3.1"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
+}
